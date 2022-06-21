@@ -1,0 +1,21 @@
+name: Run the test suite
+
+on:
+  - pull_request
+  - push
+
+jobs:
+  run_test_suite:
+    strategy:
+      matrix:
+        # Version list: https://haxe.org/download/list/
+        haxe-version: [ '4.1.5', '4.2.5' ]
+    name: Test
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v3
+      - uses: krdlab/setup-haxe@v1
+        with:
+          haxe-version: ${{ matrix.haxe-version }}
+      - name: Run the Test Suite
+        run: haxe -cp src -cp test -main RunTests -resource test/snapshot-rev4.json@snapshot-rev4 --interp

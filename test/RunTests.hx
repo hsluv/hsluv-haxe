@@ -146,5 +146,6 @@ class RunTests {
     static public function main () {
         testHsluv();
         testRgbChannelBounds();
+        trace("OK");
     }
 }
