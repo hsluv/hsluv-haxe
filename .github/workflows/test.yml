@@ -18,4 +18,4 @@ jobs:
         with:
           haxe-version: ${{ matrix.haxe-version }}
       - name: Run the Test Suite
-        run: haxe -cp src -cp test -main RunTests -resource test/snapshot-rev4.json@snapshot-rev4 --interp
+        run: haxe -cp src -cp test -main test.RunTests -resource test/snapshot-rev4.json@snapshot-rev4 --interp
