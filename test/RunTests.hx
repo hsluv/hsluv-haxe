@@ -1,151 +1,135 @@
-package;
+package test;
 
-import hsluv.Hsluv;
-
+import hsluv.HsluvConverter;
 
 class RunTests {
+	private static inline var MAXDIFF:Float = 0.0000000001;
+	private static inline var MAXRELDIFF:Float = 0.000000001;
 
-    private static inline var MAXDIFF:Float = 0.0000000001;
-    private static inline var MAXRELDIFF:Float = 0.000000001;
+	static function assertFalse(b:Bool) {
+		if (b) {
+			throw new haxe.Exception("Could not load");
+		}
+	}
 
-    static function assertFalse(b: Bool) {
-        if (b) {
-            throw new haxe.Exception("Could not load");
-        }
-    }
+	static function assertEquals(a:String, b:String) {
+		if (a != b) {
+			throw new haxe.Exception("Not equals");
+		}
+	}
 
-    static function assertEquals(a:String, b:String) {
-        if (a != b) {
-            throw new haxe.Exception("Not equals");
-        }
-    }
+	/**
+	 * modified from
+	 * https://randomascii.wordpress.com/2012/02/25/comparing-floating-point-numbers-2012-edition/
+	 */
+	static function assertAlmostEqualRelativeAndAbs(a:Float, b:Float) {
+		// Check if the numbers are really close -- needed
+		// when comparing numbers near zero.
+		var diff:Float = Math.abs(a - b);
+		if (diff <= MAXDIFF) {
+			return;
+		}
 
-    /**
-     * modified from
-     * https://randomascii.wordpress.com/2012/02/25/comparing-floating-point-numbers-2012-edition/
-     */
-    static function assertAlmostEqualRelativeAndAbs(a:Float, b:Float):Bool {
-        // Check if the numbers are really close -- needed
-        // when comparing numbers near zero.
-        var diff:Float = Math.abs(a - b);
-        if (diff <= MAXDIFF) {
-            return true;
-        }
+		a = Math.abs(a);
+		b = Math.abs(b);
+		var largest:Float = (b > a) ? b : a;
 
-        a = Math.abs(a);
-        b = Math.abs(b);
-        var largest:Float = (b > a) ? b : a;
+		if (diff > largest * MAXRELDIFF) {
+			throw new haxe.Exception("Not equals");
+		}
+	}
 
-        return diff <= largest * MAXRELDIFF;
-    }
+	static function assertClose(expected:HsluvConverter, actual:HsluvConverter) {
+		assertEquals(expected.hex, actual.hex);
+		assertAlmostEqualRelativeAndAbs(expected.rgb_r, actual.rgb_r);
+		assertAlmostEqualRelativeAndAbs(expected.rgb_g, actual.rgb_g);
+		assertAlmostEqualRelativeAndAbs(expected.rgb_b, actual.rgb_b);
+		assertAlmostEqualRelativeAndAbs(expected.xyz_x, actual.xyz_x);
+		assertAlmostEqualRelativeAndAbs(expected.xyz_y, actual.xyz_y);
+		assertAlmostEqualRelativeAndAbs(expected.xyz_z, actual.xyz_z);
+		assertAlmostEqualRelativeAndAbs(expected.luv_l, actual.luv_l);
+		assertAlmostEqualRelativeAndAbs(expected.luv_u, actual.luv_u);
+		assertAlmostEqualRelativeAndAbs(expected.luv_v, actual.luv_v);
+		assertAlmostEqualRelativeAndAbs(expected.lch_l, actual.lch_l);
+		assertAlmostEqualRelativeAndAbs(expected.lch_c, actual.lch_c);
+		assertAlmostEqualRelativeAndAbs(expected.lch_h, actual.lch_h);
+		assertAlmostEqualRelativeAndAbs(expected.hsluv_h, actual.hsluv_h);
+		assertAlmostEqualRelativeAndAbs(expected.hsluv_s, actual.hsluv_s);
+		assertAlmostEqualRelativeAndAbs(expected.hsluv_l, actual.hsluv_l);
+		assertAlmostEqualRelativeAndAbs(expected.hpluv_h, actual.hpluv_h);
+		assertAlmostEqualRelativeAndAbs(expected.hpluv_p, actual.hpluv_p);
+		assertAlmostEqualRelativeAndAbs(expected.hpluv_l, actual.hpluv_l);
+	}
 
-    static function assertTuplesClose(label:String, expected:Array<Float>, actual:Array<Float>):Void {
-        var mismatch:Bool = false;
-        var deltas:Array<Float> = [];
+	static function testHsluv() {
+		var file = haxe.Resource.getString("snapshot-rev4");
+		if (file == null) {
+			trace("Couldn't load the snapshot file snapshot-rev4, make sure it's present in test/resources.");
+		}
+		assertFalse(file == null);
+		var object = haxe.Json.parse(file);
+		var conv = new HsluvConverter();
 
-        for(i in 0...expected.length) {
-            deltas[i] = Math.abs(expected[i] - actual[i]);
-            if (!assertAlmostEqualRelativeAndAbs(expected[i], actual[i])) {
-                mismatch = true;
-            }
-        }
+		for (fieldName in Reflect.fields(object)) {
+			var field = Reflect.field(object, fieldName);
+			var sample = new HsluvConverter();
+			sample.hex = fieldName;
+			sample.rgb_r = field.rgb[0];
+			sample.rgb_g = field.rgb[1];
+			sample.rgb_b = field.rgb[2];
+			sample.xyz_x = field.xyz[0];
+			sample.xyz_y = field.xyz[1];
+			sample.xyz_z = field.xyz[2];
+			sample.luv_l = field.luv[0];
+			sample.luv_u = field.luv[1];
+			sample.luv_v = field.luv[2];
+			sample.lch_l = field.lch[0];
+			sample.lch_c = field.lch[1];
+			sample.lch_h = field.lch[2];
+			sample.hsluv_h = field.hsluv[0];
+			sample.hsluv_s = field.hsluv[1];
+			sample.hsluv_l = field.hsluv[2];
+			sample.hpluv_h = field.hpluv[0];
+			sample.hpluv_p = field.hpluv[1];
+			sample.hpluv_l = field.hpluv[2];
 
-        if (mismatch) {
-            trace("MISMATCH " + label);
-            trace(" expected: " + expected[0] + "," + expected[1] + "," + expected[2]);
-            trace("  actual: " + actual[0] + "," + actual[1] + "," + actual[2]);
-            trace("  deltas: " + deltas[0] + "," + deltas[1] + "," + expected[2]);
-        }
+			// forward functions
 
-        assertFalse(mismatch);
-    }
+			conv.hex = fieldName;
+			conv.hexToRgb();
+			conv.rgbToXyz();
+			conv.xyzToLuv();
+			conv.luvToLch();
+			conv.lchToHpluv();
+			conv.lchToHsluv();
+            assertClose(conv, sample);
 
-    static function testConsistency() {
-        var samples = Snapshot.generateHexSamples();
-        for (hex in samples) {
-            assertEquals(hex, Hsluv.hsluvToHex(Hsluv.hexToHsluv(hex)));
-            assertEquals(hex, Hsluv.hpluvToHex(Hsluv.hexToHpluv(hex)));
-        }
-    }
+			// backward functions
 
-    static function testRgbChannelBounds() {
-        // TODO: Consider clipping RGB channels instead and testing with 0 error tolerance
-        for (r in [0.0, 1.0]) {
-            for (g in [0.0, 1.0]) {
-                for (b in [0.0, 1.0]) {
-                    var sample = [r, g, b];
-                    var hsluv = Hsluv.rgbToHsluv(sample);
-                    var hpluv = Hsluv.rgbToHpluv(sample);
-                    var rgbHsluv = Hsluv.hsluvToRgb(hsluv);
-                    var rgbHpluv = Hsluv.hpluvToRgb(hpluv);
-                    assertTuplesClose('RGB -> HSLuv -> RGB', sample, rgbHsluv);
-                    assertTuplesClose('RGB -> HPLuv -> RGB', sample, rgbHpluv);
-                }
-            }
-        }
-    }
+            conv.hsluv_h = sample.hsluv_h;
+            conv.hsluv_s = sample.hsluv_s;
+            conv.hsluv_l = sample.hsluv_l;
+            conv.hsluvToLch();
+            conv.lchToLuv();
+            conv.luvToXyz();
+            conv.xyzToRgb();
+            conv.rgbToHex();
+            assertClose(conv, sample);
 
-    static function testHsluv() {
+            conv.hpluv_h = sample.hpluv_h;
+            conv.hpluv_p = sample.hpluv_p;
+            conv.hpluv_l = sample.hpluv_l;
+            conv.hpluvToLch();
+            conv.lchToLuv();
+            conv.luvToXyz();
+            conv.xyzToRgb();
+            conv.rgbToHex();
+            assertClose(conv, sample);
+		}
+	}
 
-        var file = haxe.Resource.getString("snapshot-rev4");
-        if(file == null) {
-            trace("Couldn't load the snapshot file snapshot-rev4, make sure it's present in test/resources.");
-        }
-        assertFalse(file == null);
-        var object = haxe.Json.parse(file);
-
-        for (fieldName in Reflect.fields(object))
-        {
-
-            var field = Reflect.field(object, fieldName);
-            // print("testing " + fieldName + " on "+getTargetName()+"\n");
-
-            // forward functions
-
-            var rgbFromHex = Hsluv.hexToRgb(fieldName);
-            var xyzFromRgb = Hsluv.rgbToXyz(field.rgb);
-            var luvFromXyz = Hsluv.xyzToLuv(field.xyz);
-            var lchFromLuv = Hsluv.luvToLch(field.luv);
-            var hsluvFromLch = Hsluv.lchToHsluv(field.lch);
-            var hpluvFromLch = Hsluv.lchToHpluv(field.lch);
-            var hsluvFromHex = Hsluv.hexToHsluv(fieldName);
-            var hpluvFromHex = Hsluv.hexToHpluv(fieldName);
-
-            assertTuplesClose(fieldName + "→" + "hexToRgb", field.rgb, rgbFromHex);
-            assertTuplesClose(fieldName + "→" + "rgbToXyz", field.xyz, xyzFromRgb);
-            assertTuplesClose(fieldName + "→" + "xyzToLuv", field.luv, luvFromXyz);
-            assertTuplesClose(fieldName + "→" + "luvToLch", field.lch, lchFromLuv);
-            assertTuplesClose(fieldName + "→" + "lchToHsluv", field.hsluv, hsluvFromLch);
-            assertTuplesClose(fieldName + "→" + "lchToHpluv", field.hpluv, hpluvFromLch);
-            assertTuplesClose(fieldName + "→" + "hexToHsluv", field.hsluv, hsluvFromHex);
-            assertTuplesClose(fieldName + "→" + "hexToHpluv", field.hpluv, hpluvFromHex);
-
-            // backward functions
-
-            var lchFromHsluv = Hsluv.hsluvToLch(field.hsluv);
-            var lchFromHpluv = Hsluv.hpluvToLch(field.hpluv);
-            var luvFromLch = Hsluv.lchToLuv(field.lch);
-            var xyzFromLuv = Hsluv.luvToXyz(field.luv);
-            var rgbFromXyz = Hsluv.xyzToRgb(field.xyz);
-            var hexFromRgb:String = Hsluv.rgbToHex(field.rgb);
-            var hexFromHsluv:String = Hsluv.hsluvToHex(field.hsluv);
-            var hexFromHpluv:String = Hsluv.hpluvToHex(field.hpluv);
-
-            assertTuplesClose("hsluvToLch", field.lch, lchFromHsluv);
-            assertTuplesClose("hpluvToLch", field.lch, lchFromHpluv);
-            assertTuplesClose("lchToLuv", field.luv, luvFromLch);
-            assertTuplesClose("luvToXyz", field.xyz, xyzFromLuv);
-            assertTuplesClose("xyzToRgb", field.rgb, rgbFromXyz);
-            // toLowerCase because some targets such as lua have hard time parsing hex code with various cases
-            assertEquals(fieldName, hexFromRgb.toLowerCase());
-            assertEquals(fieldName, hexFromHsluv.toLowerCase());
-            assertEquals(fieldName, hexFromHpluv.toLowerCase());
-        }
-    }
-
-    static public function main () {
-        testHsluv();
-        testRgbChannelBounds();
-        trace("OK");
-    }
+	static public function main() {
+		testHsluv();
+		trace("OK");
+	}
 }

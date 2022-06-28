@@ -1,143 +1,9 @@
 package hsluv;
-import hsluv.Geometry;
 
-/**
-Human-friendly HSL conversion utility class.
+import hsluv.HsluvConverter;
 
-The math for most of this module was taken from:
-
- * http://www.easyrgb.com
- * http://www.brucelindbloom.com
- * Wikipedia
-
-All numbers below taken from math/bounds.wxm wxMaxima file. We use 17
-digits of decimal precision to export the numbers, effectively exporting
-them as double precision IEEE 754 floats.
-
-"If an IEEE 754 double precision is converted to a decimal string with at
-least 17 significant digits and then converted back to double, then the
-final number must match the original"
-
-Source: https://en.wikipedia.org/wiki/Double-precision_floating-point_format
-=======
-*/
 
 class Hsluv {
-
-    private static var m =
-    [
-        [3.2409699419045214,   -1.5373831775700935, -0.49861076029300328],
-        [-0.96924363628087983,  1.8759675015077207,  0.041555057407175613],
-        [0.055630079696993609, -0.20397695888897657, 1.0569715142428786],
-    ];
-
-    private static var minv =
-    [
-        [0.41239079926595948,  0.35758433938387796, 0.18048078840183429],
-        [0.21263900587151036,  0.71516867876775593, 0.072192315360733715],
-        [0.019330818715591851, 0.11919477979462599, 0.95053215224966058]
-    ];
-
-    private static var refY:Float = 1.0;
-
-    private static var refU:Float = 0.19783000664283681;
-    private static var refV:Float = 0.468319994938791;
-
-    // CIE LUV constants
-    private static var kappa:Float = 903.2962962962963;
-    private static var epsilon:Float = 0.0088564516790356308;
-
-    private static var hexChars:String = "0123456789abcdef";
-
-    /**
-    For a given lightness, return a list of 6 lines in slope-intercept
-    form that represent the bounds in CIELUV, stepping over which will
-    push a value out of the RGB gamut
-    */
-    public static function getBounds(L:Float):Array<Line> {
-        var result:Array<Line> = [];
-
-        var sub1:Float = Math.pow(L + 16, 3) / 1560896;
-        var sub2:Float = sub1 > epsilon ? sub1 : L / kappa;
-
-        for (c in 0...3) {
-            var m1:Float = m[c][0];
-            var m2:Float = m[c][1];
-            var m3:Float = m[c][2];
-
-            for (t in 0...2) {
-                var top1:Float = (284517 * m1 - 94839 * m3) * sub2;
-                var top2:Float = (838422 * m3 + 769860 * m2 + 731718 * m1) * L * sub2 - 769860 * t * L;
-                var bottom:Float = (632260 * m3 - 126452 * m2) * sub2 + 126452 * t;
-
-                result.push({
-                    slope: top1 / bottom,
-                    intercept: top2 / bottom
-                });
-            }
-        }
-
-        return result;
-    }
-
-    /**
-    For given lightness, returns the maximum chroma. Keeping the chroma value
-    below this number will ensure that for any hue, the color is within the RGB
-    gamut.
-    */
-    public static function maxSafeChromaForL(L:Float):Float {
-        var bounds:Array<Line> = getBounds(L);
-        var min:Float = Math.POSITIVE_INFINITY;
-
-        for (bound in bounds) {
-            var length:Float = Geometry.distanceLineFromOrigin(bound);
-            min = Math.min(min, length);
-        }
-
-        return min;
-    }
-
-    public static function maxChromaForLH(L:Float, H:Float) {
-        var hrad:Float = H / 360 * Math.PI * 2;
-        var bounds:Array<Line> = getBounds(L);
-        var min:Float = Math.POSITIVE_INFINITY;
-
-        for (bound in bounds) {
-            var length:Float = Geometry.lengthOfRayUntilIntersect(hrad, bound);
-            if (length >= 0) {
-                min = Math.min(min, length);
-            }
-        }
-
-        return min;
-    }
-
-    private static function dotProduct(a:Array<Float>, b:Array<Float>):Float {
-        var sum:Float = 0;
-
-        for (i in 0...a.length) {
-            sum += a[i] * b[i];
-        }
-
-        return sum;
-    }
-
-    // Used for rgb conversions
-    private static function fromLinear(c:Float):Float {
-        if (c <= 0.0031308) {
-            return 12.92 * c;
-        } else {
-            return 1.055 * Math.pow(c, 1 / 2.4) - 0.055;
-        }
-    }
-
-    private static function toLinear(c:Float):Float {
-        if (c > 0.04045) {
-            return Math.pow((c + 0.055) / (1 + 0.055), 2.4);
-        } else {
-            return c / 12.92;
-        }
-    }
 
     /**
     * XYZ coordinates are ranging in [0;1] and RGB coordinates in [0;1] range.
@@ -145,11 +11,12 @@ class Hsluv {
     * @return An array containing the resulting color's red, green and blue.
     **/
     public static function xyzToRgb(tuple:Array<Float>):Array<Float> {
-        return [
-            fromLinear(dotProduct(m[0], tuple)),
-            fromLinear(dotProduct(m[1], tuple)),
-            fromLinear(dotProduct(m[2], tuple))
-        ];
+        var conv = new HsluvConverter();
+        conv.xyz_x = tuple[0];
+        conv.xyz_y = tuple[1];
+        conv.xyz_z = tuple[2];
+        conv.xyzToRgb();
+        return [conv.rgb_r, conv.rgb_g, conv.rgb_b];
     }
 
     /**
@@ -158,40 +25,12 @@ class Hsluv {
     * @return An array containing the resulting color's XYZ coordinates.
     **/
     public static function rgbToXyz(tuple:Array<Float>):Array<Float> {
-        var rgbl:Array<Float> =
-        [
-            toLinear(tuple[0]),
-            toLinear(tuple[1]),
-            toLinear(tuple[2])
-        ];
-
-        return [
-            dotProduct(minv[0], rgbl),
-            dotProduct(minv[1], rgbl),
-            dotProduct(minv[2], rgbl)
-        ];
-    }
-
-    /*
-    http://en.wikipedia.org/wiki/CIELUV
-    In these formulas, Yn refers to the reference white point. We are using
-    illuminant D65, so Yn (see refY in Maxima file) equals 1. The formula is
-    simplified accordingly.
-    */
-    public static function yToL(Y:Float):Float {
-        if (Y <= epsilon) {
-            return (Y / refY) * kappa;
-        } else {
-            return 116 * Math.pow(Y / refY, 1.0 / 3.0) - 16;
-        }
-    }
-
-    public static function lToY(L:Float):Float {
-        if (L <= 8) {
-            return refY * L / kappa;
-        } else {
-            return refY * Math.pow((L + 16) / 116, 3);
-        }
+        var conv = new HsluvConverter();
+        conv.rgb_r = tuple[0];
+        conv.rgb_g = tuple[1];
+        conv.rgb_b = tuple[2];
+        conv.rgbToXyz();
+        return [conv.xyz_x, conv.xyz_y, conv.xyz_z];
     }
 
     /**
@@ -200,33 +39,12 @@ class Hsluv {
     * @return An array containing the resulting color's LUV coordinates.
     **/
     public static function xyzToLuv(tuple:Array<Float>):Array<Float> {
-        var X:Float = tuple[0];
-        var Y:Float = tuple[1];
-        var Z:Float = tuple[2];
-
-        // This divider fix avoids a crash on Python (divide by zero except.)
-        var divider:Float = (X + (15 * Y) + (3 * Z));
-        var varU:Float = 4 * X;
-        var varV:Float = 9 * Y;
-
-        if (divider != 0) {
-            varU /= divider;
-            varV /= divider;
-        } else {
-            varU = Math.NaN;
-            varV = Math.NaN;
-        }
-
-        var L:Float = yToL(Y);
-
-        if (L == 0) {
-            return [0, 0, 0];
-        }
-
-        var U:Float = 13 * L * (varU - refU);
-        var V:Float = 13 * L * (varV - refV);
-
-        return [L, U, V];
+        var conv = new HsluvConverter();
+        conv.xyz_x = tuple[0];
+        conv.xyz_y = tuple[1];
+        conv.xyz_z = tuple[2];
+        conv.xyzToLuv();
+        return [conv.luv_l, conv.luv_u, conv.luv_v];
     }
 
     /**
@@ -235,22 +53,12 @@ class Hsluv {
     * @return An array containing the resulting color's XYZ coordinates.
     **/
     public static function luvToXyz(tuple:Array<Float>):Array<Float> {
-        var L:Float = tuple[0];
-        var U:Float = tuple[1];
-        var V:Float = tuple[2];
-
-        if (L == 0) {
-            return [0, 0, 0];
-        }
-
-        var varU:Float = U / (13 * L) + refU;
-        var varV:Float = V / (13 * L) + refV;
-
-        var Y:Float = lToY(L);
-        var X:Float = 0 - (9 * Y * varU) / ((varU - 4) * varV - varU * varV);
-        var Z:Float = (9 * Y - (15 * varV * Y) - (varV * X)) / (3 * varV);
-
-        return [X, Y, Z];
+        var conv = new HsluvConverter();
+        conv.luv_l = tuple[0];
+        conv.luv_u = tuple[1];
+        conv.luv_v = tuple[2];
+        conv.luvToXyz();
+        return [conv.xyz_x, conv.xyz_y, conv.xyz_z];
     }
 
     /**
@@ -258,26 +66,12 @@ class Hsluv {
     * @return An array containing the resulting color's LCH coordinates.
     **/
     public static function luvToLch(tuple:Array<Float>):Array<Float> {
-        var L:Float = tuple[0];
-        var U:Float = tuple[1];
-        var V:Float = tuple[2];
-
-        var C:Float = Math.sqrt(U * U + V * V);
-        var H:Float;
-
-        // Greys: disambiguate hue
-        if (C < 0.00000001) {
-            H = 0;
-        } else {
-            var Hrad:Float = Math.atan2(V, U);
-            H = (Hrad * 180.0) / Math.PI;
-
-            if (H < 0) {
-                H = 360 + H;
-            }
-        }
-
-        return [L, C, H];
+        var conv = new HsluvConverter();
+        conv.luv_l = tuple[0];
+        conv.luv_u = tuple[1];
+        conv.luv_v = tuple[2];
+        conv.luvToLch();
+        return [conv.lch_l, conv.lch_c, conv.lch_h];
     }
 
     /**
@@ -285,15 +79,12 @@ class Hsluv {
     * @return An array containing the resulting color's LUV coordinates.
     **/
     public static function lchToLuv(tuple:Array<Float>):Array<Float> {
-        var L:Float = tuple[0];
-        var C:Float = tuple[1];
-        var H:Float = tuple[2];
-
-        var Hrad:Float = H / 180.0 * Math.PI;
-        var U:Float = Math.cos(Hrad) * C;
-        var V:Float = Math.sin(Hrad) * C;
-
-        return [L, U, V];
+        var conv = new HsluvConverter();
+        conv.lch_l = tuple[0];
+        conv.lch_c = tuple[1];
+        conv.lch_h = tuple[2];
+        conv.lchToLuv();
+        return [conv.luv_l, conv.luv_u, conv.luv_v];
     }
 
     /**
@@ -302,23 +93,12 @@ class Hsluv {
     * @return An array containing the resulting color's LCH coordinates.
     **/
     public static function hsluvToLch(tuple:Array<Float>):Array<Float> {
-        var H:Float = tuple[0];
-        var S:Float = tuple[1];
-        var L:Float = tuple[2];
-
-        // White and black: disambiguate chroma
-        if (L > 99.9999999) {
-            return [100, 0, H];
-        }
-
-        if (L < 0.00000001) {
-            return [0, 0, H];
-        }
-
-        var max:Float = maxChromaForLH(L, H);
-        var C:Float = max / 100 * S;
-
-        return [L, C, H];
+        var conv = new HsluvConverter();
+        conv.hsluv_h = tuple[0];
+        conv.hsluv_s = tuple[1];
+        conv.hsluv_l = tuple[2];
+        conv.hsluvToLch();
+        return [conv.lch_l, conv.lch_c, conv.lch_h];
     }
 
     /**
@@ -327,23 +107,12 @@ class Hsluv {
     * @return An array containing the resulting color's HSL coordinates in HSLuv color space.
     **/
     public static function lchToHsluv(tuple:Array<Float>):Array<Float> {
-        var L:Float = tuple[0];
-        var C:Float = tuple[1];
-        var H:Float = tuple[2];
-
-        // White and black: disambiguate chroma
-        if (L > 99.9999999) {
-            return [H, 0, 100];
-        }
-
-        if (L < 0.00000001) {
-            return [H, 0, 0];
-        }
-
-        var max:Float = maxChromaForLH(L, H);
-        var S:Float = C / max * 100;
-
-        return [H, S, L];
+        var conv = new HsluvConverter();
+        conv.lch_l = tuple[0];
+        conv.lch_c = tuple[1];
+        conv.lch_h = tuple[2];
+        conv.lchToHsluv();
+        return [conv.hsluv_h, conv.hsluv_s, conv.hsluv_l];
     }
 
     /**
@@ -352,22 +121,12 @@ class Hsluv {
     * @return An array containing the resulting color's LCH coordinates.
     **/
     public static function hpluvToLch(tuple:Array<Float>):Array<Float> {
-        var H:Float = tuple[0];
-        var S:Float = tuple[1];
-        var L:Float = tuple[2];
-
-        if (L > 99.9999999) {
-            return [100, 0, H];
-        }
-
-        if (L < 0.00000001) {
-            return [0, 0, H];
-        }
-
-        var max:Float = maxSafeChromaForL(L);
-        var C:Float = max / 100 * S;
-
-        return [L, C, H];
+        var conv = new HsluvConverter();
+        conv.hpluv_h = tuple[0];
+        conv.hpluv_p = tuple[1];
+        conv.hpluv_l = tuple[2];
+        conv.hpluvToLch();
+        return [conv.lch_l, conv.lch_c, conv.lch_h];
     }
 
     /**
@@ -376,23 +135,12 @@ class Hsluv {
     * @return An array containing the resulting color's HSL coordinates in HPLuv (pastel variant) color space.
     **/
     public static function lchToHpluv(tuple:Array<Float>):Array<Float> {
-        var L:Float = tuple[0];
-        var C:Float = tuple[1];
-        var H:Float = tuple[2];
-
-        // White and black: disambiguate saturation
-        if (L > 99.9999999) {
-            return [H, 0, 100];
-        }
-
-        if (L < 0.00000001) {
-            return [H, 0, 0];
-        }
-
-        var max:Float = maxSafeChromaForL(L);
-        var S:Float = C / max * 100;
-
-        return [H, S, L];
+        var conv = new HsluvConverter();
+        conv.lch_l = tuple[0];
+        conv.lch_c = tuple[1];
+        conv.lch_h = tuple[2];
+        conv.lchToHpluv();
+        return [conv.hpluv_h, conv.hpluv_p, conv.hpluv_l];
     }
 
     /**
@@ -401,17 +149,12 @@ class Hsluv {
     * @return A string containing a `#RRGGBB` representation of given color.
     **/
     public static function rgbToHex(tuple:Array<Float>):String {
-        var h:String = "#";
-
-        for (i in 0...3) {
-            var chan:Float = tuple[i];
-            var c = Math.round(chan * 255);
-            var digit2 = c % 16;
-            var digit1 = Std.int((c - digit2) / 16);
-            h += hexChars.charAt(digit1) + hexChars.charAt(digit2);
-        }
-
-        return h;
+        var conv = new HsluvConverter();
+        conv.rgb_r = tuple[0];
+        conv.rgb_g = tuple[1];
+        conv.rgb_b = tuple[2];
+        conv.rgbToHex();
+        return conv.hex;
     }
 
     /**
@@ -420,15 +163,10 @@ class Hsluv {
     * @return An array containing the color's RGB values.
     **/
     public static function hexToRgb(hex:String):Array<Float> {
-        hex = hex.toLowerCase();
-        var ret = [];
-        for (i in 0...3) {
-            var digit1 = hexChars.indexOf(hex.charAt(i * 2 + 1));
-            var digit2 = hexChars.indexOf(hex.charAt(i * 2 + 2));
-            var n = digit1 * 16 + digit2;
-            ret.push(n / 255.0);
-        }
-        return ret;
+        var conv = new HsluvConverter();
+        conv.hex = hex;
+        conv.hexToRgb();
+        return [conv.rgb_r, conv.rgb_g, conv.rgb_b];
     }
 
     /**
@@ -437,7 +175,14 @@ class Hsluv {
     * @return An array containing the resulting color's RGB coordinates.
     **/
     public static function lchToRgb(tuple:Array<Float>):Array<Float> {
-        return xyzToRgb(luvToXyz(lchToLuv(tuple)));
+        var conv = new HsluvConverter();
+        conv.lch_l = tuple[0];
+        conv.lch_c = tuple[1];
+        conv.lch_h = tuple[2];
+        conv.lchToLuv();
+        conv.luvToXyz();
+        conv.xyzToRgb();
+        return [conv.rgb_r, conv.rgb_g, conv.rgb_b];
     }
 
     /**
@@ -447,6 +192,7 @@ class Hsluv {
     **/
     public static function rgbToLch(tuple:Array<Float>):Array<Float> {
         return luvToLch(xyzToLuv(rgbToXyz(tuple)));
+
     }
 
     // RGB <--> HPLuv
@@ -500,12 +246,30 @@ class Hsluv {
     **/
     @:keep
     public static function hsluvToHex(tuple:Array<Float>):String {
-        return rgbToHex(hsluvToRgb(tuple));
+        var conv = new HsluvConverter();
+        conv.hsluv_h = tuple[0];
+        conv.hsluv_s = tuple[1];
+        conv.hsluv_l = tuple[2];
+        conv.hsluvToLch();
+        conv.lchToLuv();
+        conv.luvToXyz();
+        conv.xyzToRgb();
+        conv.rgbToHex();
+        return conv.hex;
     }
 
     @:keep
     public static function hpluvToHex(tuple:Array<Float>):String {
-        return rgbToHex(hpluvToRgb(tuple));
+        var conv = new HsluvConverter();
+        conv.hpluv_h = tuple[0];
+        conv.hpluv_p = tuple[1];
+        conv.hpluv_l = tuple[2];
+        conv.hpluvToLch();
+        conv.lchToLuv();
+        conv.luvToXyz();
+        conv.xyzToRgb();
+        conv.rgbToHex();
+        return conv.hex;
     }
 
     /**
@@ -515,7 +279,14 @@ class Hsluv {
     **/
     @:keep
     public static function hexToHsluv(s:String):Array<Float> {
-        return rgbToHsluv(hexToRgb(s));
+        var conv = new HsluvConverter();
+        conv.hex = s;
+        conv.hexToRgb();
+        conv.rgbToXyz();
+        conv.xyzToLuv();
+        conv.luvToLch();
+        conv.lchToHsluv();
+        return [conv.hsluv_h, conv.hsluv_s, conv.hsluv_l];
     }
 
     /**
@@ -525,7 +296,13 @@ class Hsluv {
     **/
     @:keep
     public static function hexToHpluv(s:String):Array<Float> {
-        return rgbToHpluv(hexToRgb(s));
+        var conv = new HsluvConverter();
+        conv.hex = s;
+        conv.hexToRgb();
+        conv.rgbToXyz();
+        conv.xyzToLuv();
+        conv.luvToLch();
+        conv.lchToHpluv();
+        return [conv.hpluv_h, conv.hpluv_p, conv.hpluv_l];
     }
-
 }

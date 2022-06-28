@@ -1,8 +1,7 @@
-package;
+package test;
 
 import Sys;
-import hsluv.Hsluv;
-import haxe.Log;
+import hsluv.HsluvConverter;
 import haxe.Json;
 import haxe.ds.StringMap;
 
@@ -29,21 +28,24 @@ class Snapshot {
     static public function generateSnapshot () {
         var ret:StringMap<StringMap<Array<Float>>> = new StringMap();
         var samples = Snapshot.generateHexSamples();
+        var conv = new HsluvConverter();
 
         for (hex in samples) {
-
-            var rgb = Hsluv.hexToRgb(hex);
-            var xyz = Hsluv.rgbToXyz(rgb);
-            var luv = Hsluv.xyzToLuv(xyz);
-            var lch = Hsluv.luvToLch(luv);
+            conv.hex = hex;
+            conv.hexToRgb();
+            conv.rgbToXyz();
+            conv.xyzToLuv();
+            conv.luvToLch();
+            conv.lchToHsluv();
+            conv.lchToHpluv();
 
             var sample:StringMap<Array<Float>> = new StringMap();
-            sample.set("rgb", rgb);
-            sample.set("xyz", xyz);
-            sample.set("luv", luv);
-            sample.set("lch", lch);
-            sample.set("hsluv", Hsluv.lchToHsluv(lch));
-            sample.set("hpluv", Hsluv.lchToHpluv(lch));
+            sample.set("rgb", [conv.rgb_r, conv.rgb_g, conv.rgb_b]);
+            sample.set("xyz", [conv.xyz_z, conv.xyz_y, conv.xyz_z]);
+            sample.set("luv", [conv.luv_l, conv.luv_u, conv.luv_v]);
+            sample.set("lch", [conv.lch_l, conv.lch_c, conv.lch_h]);
+            sample.set("hsluv", [conv.hsluv_h, conv.hsluv_s, conv.hsluv_l]);
+            sample.set("hpluv", [conv.hpluv_h, conv.hpluv_p, conv.hpluv_l]);
 
             ret.set(hex, sample);
         }

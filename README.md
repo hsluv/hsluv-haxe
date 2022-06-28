@@ -4,7 +4,7 @@
 # HSLuv - Haxe implementation
 
 ## Usage
-Once imported, use the library by importing Hsluv. Here's an example:
+Once imported, use the library by importing HSLuv. Here's an example:
 
 ```haxe
 package;
@@ -65,38 +65,45 @@ The passing/returning values, when not `String` are `Array<Float>` containing ea
 - `rgbToHex(tuple:Array<Float>)`
 - `hexToRgb(hex:String)`
 
+## Development
+
+Recommended editor: VS Code with [vshaxe](https://github.com/vshaxe/vshaxe/wiki) extension.
+
+## Generate snapshot
+
+```sh
+haxe -cp src -cp test -main test.Snapshot --interp > snap.json
+```
+
 ## Testing
 
 ```sh
 # Prefered way : Haxe's builtin interpreter. Doesn't require any external libs to execute the tests.
-haxe -cp src -cp test -main RunTests -resource test/snapshot-rev4.json@snapshot-rev4 --interp
+haxe -cp src -cp test -main test.RunTests -resource test/snapshot-rev4.json@snapshot-rev4 --interp
 # Neko
-haxe -cp src -cp test -main RunTests -resource test/snapshot-rev4.json@snapshot-rev4 -x bin/neko/RunTests.n
+haxe -cp src -cp test -main test.RunTests -resource test/snapshot-rev4.json@snapshot-rev4 -x bin/neko/RunTests.n
 # CPP Linux
-haxe -cp src -cp test -main RunTests -resource test/snapshot-rev4.json@snapshot-rev4 -cpp bin/cpp -cmd bin/cpp/RunTests
+haxe -cp src -cp test -main test.RunTests -resource test/snapshot-rev4.json@snapshot-rev4 -cpp bin/cpp -cmd bin/cpp/RunTests
 # CPP Windows
-haxe -cp src -cp test -main RunTests -resource test/snapshot-rev4.json@snapshot-rev4 -cpp bin/cpp -cmd bin/cpp/RunTests.exe
+haxe -cp src -cp test -main test.RunTests -resource test/snapshot-rev4.json@snapshot-rev4 -cpp bin/cpp -cmd bin/cpp/RunTests.exe
 # C# Linux
-haxe -cp src -cp test -main RunTests -resource test/snapshot-rev4.json@snapshot-rev4 -cs bin/cs -cmd "mono bin/cs/bin/RunTests.exe"
+haxe -cp src -cp test -main test.RunTests -resource test/snapshot-rev4.json@snapshot-rev4 -cs bin/cs -cmd "mono bin/cs/bin/RunTests.exe"
 # C# Windows
-haxe -cp src -cp test -main RunTests -resource test/snapshot-rev4.json@snapshot-rev4 -cs bin/cs -cmd bin/cs/RunTests.exe
+haxe -cp src -cp test -main test.RunTests -resource test/snapshot-rev4.json@snapshot-rev4 -cs bin/cs -cmd bin/cs/RunTests.exe
 # Java
-haxe -cp src -cp test -main RunTests -resource test/snapshot-rev4.json@snapshot-rev4 -java bin/java -cmd "java -jar bin/java/RunTests.jar"
+haxe -cp src -cp test -main test.RunTests -resource test/snapshot-rev4.json@snapshot-rev4 -java bin/java -cmd "java -jar bin/java/RunTests.jar"
 # PHP
-haxe -cp src -cp test -main RunTests -resource test/snapshot-rev4.json@snapshot-rev4 -php bin/php -cmd "php bin/php/index.php"
+haxe -cp src -cp test -main test.RunTests -resource test/snapshot-rev4.json@snapshot-rev4 -php bin/php -cmd "php bin/php/index.php"
 # NodeJS
-haxe -cp src -cp test -main RunTests -resource test/snapshot-rev4.json@snapshot-rev4 -js bin/js/RunTests.js -cmd "node bin/js/RunTests.js"
+haxe -cp src -cp test -main test.RunTests -resource test/snapshot-rev4.json@snapshot-rev4 -js bin/js/RunTests.js -cmd "node bin/js/RunTests.js"
 # Python
-haxe -cp src -cp test -main RunTests -resource test/snapshot-rev4.json@snapshot-rev4 -python bin/python/RunTests.py -cmd "python bin/python/RunTests.py"
+haxe -cp src -cp test -main test.RunTests -resource test/snapshot-rev4.json@snapshot-rev4 -python bin/python/RunTests.py -cmd "python bin/python/RunTests.py"
 # Lua
-haxe -cp src -cp test -main RunTests -resource test/snapshot-rev4.json@snapshot-rev4 -lua bin/lua/RunTests.lua -cmd "lua bin/lua/RunTests.lua"
+haxe -cp src -cp test -main test.RunTests -resource test/snapshot-rev4.json@snapshot-rev4 -lua bin/lua/RunTests.lua -cmd "lua bin/lua/RunTests.lua"
 # And so on...
 ```
 
 # Notes
-
-This code work on some targets, but here are some tests that couldn't pass on my computer:
-- ~~PHP : PHP7 parseInt function doesn't convert hexadecimal values anymore.~~ Fixed since Haxe 3.4.0. Check [this issue](https://github.com/HaxeFoundation/haxe/issues/5521) for more information.
 
 Tests to do:
 - SWF
