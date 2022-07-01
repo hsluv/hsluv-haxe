@@ -49,7 +49,7 @@ The API is designed in a way to avoid heap allocation. The `HSLuv` class defines
 - HPLuv: `hpluv_h:Float`, `hpluv_p:Float`, `hpluv_l:Float`
 
 To convert between color spaces, simply set the properties of the source color space, run the
-convesion methods, then read the properties from the target color space.
+conversion methods, then read the properties from the target color space.
 
 Use the following methods to convert to and from RGB:
 
