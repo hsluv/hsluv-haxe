@@ -54,37 +54,23 @@ class HsluvConverter {
 	public var hpluv_p:Float;
 	public var hpluv_l:Float;
 
+	// 6 lines in slope-intercept format: R < 0, R > 1, G < 0, G > 1, B < 0, B > 1
 	public var r0s:Float;
 	public var r0i:Float;
 	public var r1s:Float;
 	public var r1i:Float;
 
+	public var g0s:Float;
+	public var g0i:Float;
+	public var g1s:Float;
+	public var g1i:Float;
+
+	public var b0s:Float;
+	public var b0i:Float;
+	public var b1s:Float;
+	public var b1i:Float;
+
 	public function new() {
-		this.hex = '#000000';
-
-		this.rgb_r = 0;
-		this.rgb_g = 0;
-		this.rgb_b = 0;
-
-		this.xyz_x = 0;
-		this.xyz_y = 0;
-		this.xyz_z = 0;
-
-		this.luv_l = 0;
-		this.luv_u = 0;
-		this.luv_v = 0;
-
-		this.lch_l = 0;
-		this.lch_c = 0;
-		this.lch_h = 0;
-
-		this.hsluv_h = 0;
-		this.hsluv_s = 0;
-		this.hsluv_l = 0;
-
-		this.hpluv_h = 0;
-		this.hpluv_p = 0;
-		this.hpluv_l = 0;
 	}
 
 	private static var hexChars:String = "0123456789abcdef";
@@ -194,11 +180,11 @@ class HsluvConverter {
 	}
 
 	public function xyzToLuv() {
-		// This divider fix avoids a crash on Python (divide by zero except.)
 		var divider:Float = (this.xyz_x + (15 * this.xyz_y) + (3 * this.xyz_z));
 		var varU:Float = 4 * this.xyz_x;
 		var varV:Float = 9 * this.xyz_y;
 
+		// This divider fix avoids a crash on Python (divide by zero except.)
 		if (divider != 0) {
 			varU /= divider;
 			varV /= divider;
@@ -261,80 +247,102 @@ class HsluvConverter {
 		For a given lightness, generate a list of 6 lines in slope-intercept
 		form that represent the bounds in CIELUV, stepping over which will
 		push a value out of the RGB gamut.
-
-		For HSLuv, we draw a ray from origin with angle specified by the hue. 
-		Multiple bounding lines may intercept this ray. The first one to intercept
-		it determines maximum chroma.
-
-		For HPLuv, we simply see which bounding line is closest to the origin
-		by measuring the length of its perpendicular. The shortest perpendicular
-		determines maximum chroma.
 	 */
-	public static function calculateMaxChroma(l:Float, h:Float, pastel:Bool):Float {
-		var hueRad:Float = h / 360 * Math.PI * 2;
+	public function calculateBoundingLines(l:Float, h:Float) {
 		var sub1:Float = Math.pow(l + 16, 3) / 1560896;
 		var sub2:Float = sub1 > epsilon ? sub1 : l / kappa;
 
-		var m1:Float;
-		var m2:Float;
-		var m3:Float;
-		var maxChroma = Math.POSITIVE_INFINITY;
-		// For each RGB channel ...
-		for (c in 0...3) {
-			if (c == 0) {
-				m1 = m_r0;
-				m2 = m_r1;
-				m3 = m_r2;
-			} else if (c == 1) {
-				m1 = m_g0;
-				m2 = m_g1;
-				m3 = m_g2;
-			} else {
-				m1 = m_b0;
-				m2 = m_b1;
-				m3 = m_b2;
-			}
-			var s1 = sub2 * (284517 * m1 - 94839 * m3);
-			var s2 = sub2 * (838422 * m3 + 769860 * m2 + 731718 * m1);
-			var s3 = sub2 * (632260 * m3 - 126452 * m2);
-			// Check for RGB channel less than 0, more than 1 ...
-			for (t in 0...2) {
-				var bottom:Float = s3 + 126452 * t;
-				var slope = s1 / bottom;
-				var intercept = (s2 - 769860 * t) * l / bottom;
+		var s1r = sub2 * (284517 * m_r0 - 94839 * m_r2);
+		var s2r = sub2 * (838422 * m_r2 + 769860 * m_r1 + 731718 * m_r0);
+		var s3r = sub2 * (632260 * m_r2 - 126452 * m_r1);
 
-				if (pastel) {
-					// https://en.wikipedia.org/wiki/Distance_from_a_point_to_a_line
-					var distanceFromOrigin = Math.abs(intercept) / Math.sqrt(Math.pow(slope, 2) + 1);
-					maxChroma = Math.min(maxChroma, distanceFromOrigin);
-				} else {
-					/*
-						theta  -- angle of ray starting at (0, 0)
-						m, b   -- slope and intercept of line
-						x1, y1 -- coordinates of intersection
-						len    -- length of ray until it intersects with line
+		var s1g = sub2 * (284517 * m_g0 - 94839 * m_g2);
+		var s2g = sub2 * (838422 * m_g2 + 769860 * m_g1 + 731718 * m_g0);
+		var s3g = sub2 * (632260 * m_g2 - 126452 * m_g1);
 
-						b + m * x1        = y1
-						len              >= 0
-						len * cos(theta)  = x1
-						len * sin(theta)  = y1
+		var s1b = sub2 * (284517 * m_b0 - 94839 * m_b2);
+		var s2b = sub2 * (838422 * m_b2 + 769860 * m_b1 + 731718 * m_b0);
+		var s3b = sub2 * (632260 * m_b2 - 126452 * m_b1);
+
+		this.r0s = s1r / s3r;
+		this.r0i = s2r * l / s3r;
+		this.r1s = s1r / (s3r + 126452);
+		this.r1i = (s2r - 769860) * l / (s3r + 126452);
+
+		this.g0s = s1g / s3g;
+		this.g0i = s2g * l / s3g;
+		this.g1s = s1g / (s3g + 126452);
+		this.g1i = (s2g - 769860) * l / (s3g + 126452);
+
+		this.b0s = s1b / s3b;
+		this.b0i = s2b * l / s3b;
+		this.b1s = s1b / (s3b + 126452);
+		this.b1i = (s2b - 769860) * l / (s3b + 126452);
+	}
+
+	/*
+		theta  -- angle of ray starting at (0, 0)
+		m, b   -- slope and intercept of line
+		x1, y1 -- coordinates of intersection
+		len    -- length of ray until it intersects with line
+
+		b + m * x1        = y1
+		len              >= 0
+		len * cos(theta)  = x1
+		len * sin(theta)  = y1
 
 
-						b + m * (len * cos(theta)) = len * sin(theta)
-						b = len * sin(hrad) - m * len * cos(theta)
-						b = len * (sin(hrad) - m * cos(hrad))
-						len = b / (sin(hrad) - m * cos(hrad))
-					 */
-
-					var distanceFromOriginHueAngle = intercept / (Math.sin(hueRad) - slope * Math.cos(hueRad));
-					if (distanceFromOriginHueAngle > 0) {
-						maxChroma = Math.min(maxChroma, distanceFromOriginHueAngle);
-					}
-				}
-			}
+		b + m * (len * cos(theta)) = len * sin(theta)
+		b = len * sin(hrad) - m * len * cos(theta)
+		b = len * (sin(hrad) - m * cos(hrad))
+		len = b / (sin(hrad) - m * cos(hrad))
+	*/
+	private static function distanceFromOriginAngle(slope: Float, intercept: Float, angle: Float): Float {
+		var d = intercept / (Math.sin(angle) - slope * Math.cos(angle));
+		if (d < 0) {
+			return Math.POSITIVE_INFINITY;
+		} else {
+			return d;
 		}
+	}
 
-		return maxChroma;
+	private static function distanceFromOrigin(slope: Float, intercept: Float): Float {
+		return Math.abs(intercept) / Math.sqrt(Math.pow(slope, 2) + 1);
+	}
+
+	private static function min6(f1: Float, f2: Float, f3: Float, f4: Float, f5: Float, f6: Float) {
+		return Math.min(f1, Math.min(f2, Math.min(f3, Math.min(f4, Math.min(f5, f6)))));
+	}
+
+	/*
+		For HPLuv, we simply see which bounding line is closest to the origin
+		by measuring the length of its perpendicular. The shortest perpendicular
+		determines maximum chroma.
+	*/
+	public function calcMaxChromaHpluv(): Float {
+		var r0 = distanceFromOrigin(this.r0s, this.r0i);
+		var r1 = distanceFromOrigin(this.r1s, this.r1i);
+		var g0 = distanceFromOrigin(this.g0s, this.g0i);
+		var g1 = distanceFromOrigin(this.g1s, this.g1i);
+		var b0 = distanceFromOrigin(this.b0s, this.b0i);
+		var b1 = distanceFromOrigin(this.b1s, this.b1i);
+		return min6(r0, r1, g0, g1, b0, b1);
+	}
+
+	/*
+		For HSLuv, we draw a ray from origin with angle specified by the hue. 
+		Multiple bounding lines may intercept this ray. The first one to intercept
+		it determines maximum chroma.
+	*/
+	public function calcMaxChromaHsluv(h: Float): Float {
+		var hueRad:Float = h / 360 * Math.PI * 2;
+		var r0 = distanceFromOriginAngle(this.r0s, this.r0i, hueRad);
+		var r1 = distanceFromOriginAngle(this.r1s, this.r1i, hueRad);
+		var g0 = distanceFromOriginAngle(this.g0s, this.g0i, hueRad);
+		var g1 = distanceFromOriginAngle(this.g1s, this.g1i, hueRad);
+		var b0 = distanceFromOriginAngle(this.b0s, this.b0i, hueRad);
+		var b1 = distanceFromOriginAngle(this.b1s, this.b1i, hueRad);
+		return min6(r0, r1, g0, g1, b0, b1);
 	}
 
 	public function hsluvToLch() {
@@ -347,7 +355,8 @@ class HsluvConverter {
 			this.lch_c = 0;
 		} else {
 			this.lch_l = this.hsluv_l;
-			var max:Float = calculateMaxChroma(this.hsluv_l, this.hsluv_h, false);
+			this.calculateBoundingLines(this.hsluv_l, this.hsluv_h);
+			var max = this.calcMaxChromaHsluv(this.hsluv_h);
 			this.lch_c = max / 100 * this.hsluv_s;
 		}
 		this.lch_h = this.hsluv_h;
@@ -362,7 +371,8 @@ class HsluvConverter {
 			this.hsluv_s = 0;
 			this.hsluv_l = 0;
 		} else {
-			var max:Float = calculateMaxChroma(this.lch_l, this.lch_h, false);
+			this.calculateBoundingLines(this.lch_l, this.lch_h);
+			var max = this.calcMaxChromaHsluv(this.lch_h);
 			this.hsluv_s = this.lch_c / max * 100;
 			this.hsluv_l = this.lch_l;
 		}
@@ -379,7 +389,8 @@ class HsluvConverter {
 			this.lch_c = 0;
 		} else {
 			this.lch_l = this.hpluv_l;
-			var max:Float = calculateMaxChroma(this.hpluv_l, this.hpluv_h, true);
+			this.calculateBoundingLines(this.hpluv_l, this.hpluv_h);
+			var max = this.calcMaxChromaHpluv();
 			this.lch_c = max / 100 * this.hpluv_p;
 		}
 		this.lch_h = this.hpluv_h;
@@ -394,7 +405,8 @@ class HsluvConverter {
 			this.hpluv_p = 0;
 			this.hpluv_l = 0;
 		} else {
-			var max:Float = calculateMaxChroma(this.lch_l, this.lch_h, true);
+			this.calculateBoundingLines(this.lch_l, this.lch_h);
+			var max = this.calcMaxChromaHpluv();
 			this.hpluv_p = this.lch_c / max * 100;
 			this.hpluv_l = this.lch_l;
 		}
