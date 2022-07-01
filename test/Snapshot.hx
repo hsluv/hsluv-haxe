@@ -1,7 +1,7 @@
 package test;
 
 import Sys;
-import hsluv.HsluvConverter;
+import hsluv.Hsluv;
 import haxe.Json;
 import haxe.ds.StringMap;
 
@@ -28,7 +28,7 @@ class Snapshot {
     static public function generateSnapshot () {
         var ret:StringMap<StringMap<Array<Float>>> = new StringMap();
         var samples = Snapshot.generateHexSamples();
-        var conv = new HsluvConverter();
+        var conv = new Hsluv();
 
         for (hex in samples) {
             conv.hex = hex;

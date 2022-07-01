@@ -1,6 +1,6 @@
 package test;
 
-import hsluv.HsluvConverter;
+import hsluv.Hsluv;
 
 class RunTests {
 	private static inline var MAXDIFF:Float = 0.0000000001;
@@ -39,7 +39,7 @@ class RunTests {
 		}
 	}
 
-	static function assertClose(expected:HsluvConverter, actual:HsluvConverter) {
+	static function assertClose(expected:Hsluv, actual:Hsluv) {
 		assertEquals(expected.hex, actual.hex);
 		assertAlmostEqualRelativeAndAbs(expected.rgb_r, actual.rgb_r);
 		assertAlmostEqualRelativeAndAbs(expected.rgb_g, actual.rgb_g);
@@ -68,11 +68,11 @@ class RunTests {
 		}
 		assertFalse(file == null);
 		var object = haxe.Json.parse(file);
-		var conv = new HsluvConverter();
+		var conv = new Hsluv();
 
 		for (fieldName in Reflect.fields(object)) {
 			var field = Reflect.field(object, fieldName);
-			var sample = new HsluvConverter();
+			var sample = new Hsluv();
 			sample.hex = fieldName;
 			sample.rgb_r = field.rgb[0];
 			sample.rgb_g = field.rgb[1];
@@ -96,12 +96,7 @@ class RunTests {
 			// forward functions
 
 			conv.hex = fieldName;
-			conv.hexToRgb();
-			conv.rgbToXyz();
-			conv.xyzToLuv();
-			conv.luvToLch();
-			conv.lchToHpluv();
-			conv.lchToHsluv();
+			conv.hexToHsluv();
             assertClose(conv, sample);
 
 			// backward functions
@@ -109,21 +104,13 @@ class RunTests {
             conv.hsluv_h = sample.hsluv_h;
             conv.hsluv_s = sample.hsluv_s;
             conv.hsluv_l = sample.hsluv_l;
-            conv.hsluvToLch();
-            conv.lchToLuv();
-            conv.luvToXyz();
-            conv.xyzToRgb();
-            conv.rgbToHex();
+            conv.hsluvToHex();
             assertClose(conv, sample);
 
             conv.hpluv_h = sample.hpluv_h;
             conv.hpluv_p = sample.hpluv_p;
             conv.hpluv_l = sample.hpluv_l;
-            conv.hpluvToLch();
-            conv.lchToLuv();
-            conv.luvToXyz();
-            conv.xyzToRgb();
-            conv.rgbToHex();
+            conv.hpluvToHex();
             assertClose(conv, sample);
 		}
 	}
