@@ -1,5 +1,5 @@
 package hsluv;
-import hsluv.HsluvConverter;
+import hsluv.Hsluv;
 
 /* See math/contrast.wxm */
 
@@ -10,19 +10,19 @@ class Contrast {
 
     public static function contrastRatio(lighterL, darkerL) {
         // https://www.w3.org/TR/WCAG20-TECHS/G18.html#G18-procedure
-        var lighterY = HsluvConverter.lToY(lighterL);
-        var darkerY = HsluvConverter.lToY(darkerL);
+        var lighterY = Hsluv.lToY(lighterL);
+        var darkerY = Hsluv.lToY(darkerL);
         return (lighterY + 0.05) / (darkerY + 0.05);
     }
 
     public static function lighterMinL(r:Float):Float {
-        return HsluvConverter.yToL((r - 1) / 20);
+        return Hsluv.yToL((r - 1) / 20);
     }
 
     public static function darkerMaxL(r:Float, lighterL:Float) {
-        var lighterY = HsluvConverter.lToY(lighterL);
+        var lighterY = Hsluv.lToY(lighterL);
         var maxY = (20 * lighterY - r + 1) / (20 * r);
-        return HsluvConverter.yToL(maxY);
+        return Hsluv.yToL(maxY);
     }
 
 }

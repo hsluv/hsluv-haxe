@@ -1,6 +1,6 @@
-package hsluv0;
-import hsluv0.Hsluv;
-import hsluv0.Geometry;
+package hsluv;
+import hsluv.Hsluv;
+import hsluv.Geometry;
 
 
 typedef PickerGeometry = {
@@ -17,6 +17,7 @@ typedef PickerGeometry = {
 }
 
 class ColorPicker {
+    public var hsluv:Hsluv;
 
     public static function getPickerGeometry(lightness:Float):PickerGeometry {
         // Array of lines
