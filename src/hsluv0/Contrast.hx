@@ -1,5 +1,5 @@
-package hsluv;
-import hsluv.Hsluv;
+package hsluv0;
+import hsluv0.Hsluv;
 
 /* See math/contrast.wxm */
 

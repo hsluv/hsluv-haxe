@@ -1,4 +1,4 @@
-package hsluv;
+package hsluv0;
 
 typedef Point = {
     var x:Float;

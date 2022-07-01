@@ -1,5 +1,5 @@
-package hsluv;
-import hsluv.Geometry;
+package hsluv0;
+import hsluv0.Geometry;
 
 /**
 Human-friendly HSL conversion utility class.

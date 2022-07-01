@@ -1,6 +1,6 @@
 package hsluv;
-import hsluv.Hsluv;
-import hsluv.Geometry;
+import hsluv0.Hsluv;
+import hsluv0.Geometry;
 
 
 typedef PickerGeometry = {
