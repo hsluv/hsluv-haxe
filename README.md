@@ -1,5 +1,5 @@
 [![Run the test suite](https://github.com/hsluv/hsluv-haxe/actions/workflows/test.yml/badge.svg)](https://github.com/hsluv/hsluv-haxe/actions/workflows/test.yml)
-[![haxelib](https://img.shields.io/badge/haxelib-blue.svg)](https://lib.haxe.org/p/hsluv)
+[![haxelib](https://img.shields.io/badge/haxelib-0.1.0-blue.svg)](https://lib.haxe.org/p/hsluv)
 
 # HSLuv - Haxe implementation
 
@@ -21,31 +21,16 @@ class ReadmeTest {
 }
 ```
 
-### Color values ranges
-
-- RGB values are ranging in [0;1]
-- HSLuv and HPLuv values have different ranging for their components
-    - H : [0;360]
-    - S and L : [0;100]
-- LUV has different ranging for their components
-    - L* : [0;100]
-    - u* and v* : [-100;100]
-- LCh has different ranging for their components
-    - L* : [0;100]
-    - C* : [0; ?] Upper bound varies depending on L* and H*
-    - H* : [0; 360]
-- XYZ values are ranging in [0;1]
-
 ### API functions
 
 The API is designed in a way to avoid heap allocation. The `HSLuv` class defines the following public fields:
 
-- RGB: `hex:String`, `rgb_r:Float`, `rgb_g:Float`, `rgb_r:Float`
+- RGB: `hex:String`, `rgb_r:Float` [0;1], `rgb_g:Float` [0;1], `rgb_r:Float` [0;1]
 - CIE XYZ: `xyz_x:Float`, `xyz_y:Float`, `xyz_z:Float`
 - CIE LUV: `luv_l:Float`, `luv_u:Float`, `luv_v:Float`
 - CIE LUV LCh: `lch_l:Float`, `lch_c:Float`, `lch_h:Float`
-- HSLuv: `hsluv_h:Float`, `hsluv_s:Float`, `hsluv_l:Float`
-- HPLuv: `hpluv_h:Float`, `hpluv_p:Float`, `hpluv_l:Float`
+- HSLuv: `hsluv_h:Float` [0;360], `hsluv_s:Float` [0;100], `hsluv_l:Float` [0;100]
+- HPLuv: `hpluv_h:Float` [0;360], `hpluv_p:Float` [0;100], `hpluv_l:Float` [0;100]
 
 To convert between color spaces, simply set the properties of the source color space, run the
 conversion methods, then read the properties from the target color space.
