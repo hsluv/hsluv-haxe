@@ -14,10 +14,13 @@ class ColorPickerTest {
     }
 
     static public function main () {
-        for (l in 0...100) {
+        for (l in 1...100) {
+            trace("Lightness: " + l);
             var g1 = ColorPicker.getPickerGeometry(l);
             var g2 = ColorPicker2.getPickerGeometry(l);
             if (g1.vertices.length != g2.vertices.length) {
+                trace(g1.vertices.length);
+                trace(g2.vertices.length);
                 throw new haxe.Exception("vertices.length not equal");
             }
 
