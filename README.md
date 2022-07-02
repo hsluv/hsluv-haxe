@@ -74,15 +74,9 @@ format, two for each RGB channel representing the limit of the gamut.
 
 Recommended editor: VS Code with [vshaxe](https://github.com/vshaxe/vshaxe/wiki) extension.
 
-## Generate snapshot
-
-```sh
-haxe -cp src -cp test -main test.Snapshot --interp > snapshot.json
-```
-
 ## Testing
 
-Prefered way : Haxe's builtin interpreter. Doesn't require any external libs to execute the tests:
+Prefered way: Haxe's builtin interpreter. Doesn't require any external libs to execute the tests:
 
 ```sh
 haxe -cp src -cp test -main test.RunTests -resource test/snapshot-rev4.json@snapshot-rev4 --interp
@@ -109,4 +103,13 @@ haxe -cp src -cp test -main test.RunTests -resource test/snapshot-rev4.json@snap
 haxe -cp src -cp test -main test.RunTests -resource test/snapshot-rev4.json@snapshot-rev4 -python bin/python/RunTests.py -cmd "python3 bin/python/RunTests.py"
 # Lua
 haxe -cp src -cp test -main test.RunTests -resource test/snapshot-rev4.json@snapshot-rev4 -lua bin/lua/RunTests.lua -cmd "lua bin/lua/RunTests.lua"
+```
+
+## Generate snapshot
+
+We only generate a new snapshot when we release a new revision of the color math. Then it can be used for testing this and other
+implementations.
+
+```sh
+haxe -cp src -cp test -main test.Snapshot --interp > snapshot.json
 ```

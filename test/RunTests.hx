@@ -3,73 +3,61 @@ package test;
 import hsluv.Hsluv;
 
 class RunTests {
-	private static inline var MAXDIFF:Float = 0.0000000001;
-	private static inline var MAXRELDIFF:Float = 0.000000001;
+	private static inline var EPSILON:Float = 0.00000001;
 
-	static function assertFalse(b:Bool) {
-		if (b) {
-			throw new haxe.Exception("Could not load");
-		}
-	}
-
-	static function assertEquals(a:String, b:String) {
-		if (a != b) {
+	static function assertStringEquals(expected:String, actual:String) {
+		if (expected != actual) {
 			throw new haxe.Exception("Not equals");
 		}
 	}
 
 	/**
-	 * modified from
+	 * Note that comparing floating point numbers is not as simple as this:
 	 * https://randomascii.wordpress.com/2012/02/25/comparing-floating-point-numbers-2012-edition/
+	 *
+	 * However, we are lucky to be comparing numbers with an exponent close to 0, so we can get away
+     * with a naive implementation.
 	 */
-	static function assertAlmostEqualRelativeAndAbs(a:Float, b:Float) {
-		// Check if the numbers are really close -- needed
-		// when comparing numbers near zero.
-		var diff:Float = Math.abs(a - b);
-		if (diff <= MAXDIFF) {
-			return;
-		}
-
-		a = Math.abs(a);
-		b = Math.abs(b);
-		var largest:Float = (b > a) ? b : a;
-
-		if (diff > largest * MAXRELDIFF) {
+	static function assertFloatClose(expected:Float, actual:Float) {
+		if (Math.abs(expected - actual) > EPSILON) {
+			trace(expected);
+			trace(actual);
 			throw new haxe.Exception("Not equals");
 		}
 	}
 
 	static function assertClose(expected:Hsluv, actual:Hsluv) {
-		assertEquals(expected.hex, actual.hex);
-		assertAlmostEqualRelativeAndAbs(expected.rgb_r, actual.rgb_r);
-		assertAlmostEqualRelativeAndAbs(expected.rgb_g, actual.rgb_g);
-		assertAlmostEqualRelativeAndAbs(expected.rgb_b, actual.rgb_b);
-		assertAlmostEqualRelativeAndAbs(expected.xyz_x, actual.xyz_x);
-		assertAlmostEqualRelativeAndAbs(expected.xyz_y, actual.xyz_y);
-		assertAlmostEqualRelativeAndAbs(expected.xyz_z, actual.xyz_z);
-		assertAlmostEqualRelativeAndAbs(expected.luv_l, actual.luv_l);
-		assertAlmostEqualRelativeAndAbs(expected.luv_u, actual.luv_u);
-		assertAlmostEqualRelativeAndAbs(expected.luv_v, actual.luv_v);
-		assertAlmostEqualRelativeAndAbs(expected.lch_l, actual.lch_l);
-		assertAlmostEqualRelativeAndAbs(expected.lch_c, actual.lch_c);
-		assertAlmostEqualRelativeAndAbs(expected.lch_h, actual.lch_h);
-		assertAlmostEqualRelativeAndAbs(expected.hsluv_h, actual.hsluv_h);
-		assertAlmostEqualRelativeAndAbs(expected.hsluv_s, actual.hsluv_s);
-		assertAlmostEqualRelativeAndAbs(expected.hsluv_l, actual.hsluv_l);
-		assertAlmostEqualRelativeAndAbs(expected.hpluv_h, actual.hpluv_h);
-		assertAlmostEqualRelativeAndAbs(expected.hpluv_p, actual.hpluv_p);
-		assertAlmostEqualRelativeAndAbs(expected.hpluv_l, actual.hpluv_l);
+		assertStringEquals(expected.hex, actual.hex);
+		assertFloatClose(expected.rgb_r, actual.rgb_r);
+		assertFloatClose(expected.rgb_g, actual.rgb_g);
+		assertFloatClose(expected.rgb_b, actual.rgb_b);
+		assertFloatClose(expected.xyz_x, actual.xyz_x);
+		assertFloatClose(expected.xyz_y, actual.xyz_y);
+		assertFloatClose(expected.xyz_z, actual.xyz_z);
+		assertFloatClose(expected.luv_l, actual.luv_l);
+		assertFloatClose(expected.luv_u, actual.luv_u);
+		assertFloatClose(expected.luv_v, actual.luv_v);
+		assertFloatClose(expected.lch_l, actual.lch_l);
+		assertFloatClose(expected.lch_c, actual.lch_c);
+		assertFloatClose(expected.lch_h, actual.lch_h);
+		assertFloatClose(expected.hsluv_h, actual.hsluv_h);
+		assertFloatClose(expected.hsluv_s, actual.hsluv_s);
+		assertFloatClose(expected.hsluv_l, actual.hsluv_l);
+		assertFloatClose(expected.hpluv_h, actual.hpluv_h);
+		assertFloatClose(expected.hpluv_p, actual.hpluv_p);
+		assertFloatClose(expected.hpluv_l, actual.hpluv_l);
 	}
 
-	static function testHsluv() {
+	static function main() {
+		trace("Loading snapshot ...");
 		var file = haxe.Resource.getString("snapshot-rev4");
 		if (file == null) {
-			trace("Couldn't load the snapshot file snapshot-rev4, make sure it's present in test/resources.");
+			throw new haxe.Exception("Couldn't load the snapshot file snapshot-rev4, make sure it's present in test/resources.");
 		}
-		assertFalse(file == null);
 		var object = haxe.Json.parse(file);
-		var conv = new Hsluv();
 
+		trace("Testing ...");
+		var conv = new Hsluv();
 		for (fieldName in Reflect.fields(object)) {
 			var field = Reflect.field(object, fieldName);
 			var sample = new Hsluv();
@@ -113,10 +101,7 @@ class RunTests {
             conv.hpluvToHex();
             assertClose(conv, sample);
 		}
-	}
 
-	static public function main() {
-		testHsluv();
 		trace("OK");
 	}
 }
