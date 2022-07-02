@@ -7,17 +7,16 @@
 Once imported, use the library by importing HSLuv. Here's an example:
 
 ```haxe
-package;
 import hsluv.Hsluv;
 
-public class Main {
+class ReadmeTest {
     public static function main() {
         var conv = new Hsluv();
-        conv.rgb_r = 1;
-        conv.rgb_g = 1;
-        conv.rgb_b = 1;
-        conv.rgbToHex();
-        trace(conv.hex); // Will print "#FFFFFF"
+        conv.hsluv_h = 10;
+        conv.hsluv_s = 75;
+        conv.hsluv_l = 65;
+        conv.hsluvToHex();
+        trace(conv.hex); // Will print "#ec7d82"
     }
 }
 ```
@@ -60,6 +59,16 @@ Use the following methods to do step-by-step conversion:
 
 - Forward: `hsluvToLch()` (or `hpluvToLch()`), `lchToLuv()`, `luvToXyz()`, `xyzToRgb()`, `rgbToHex()`
 - Backward: `hexToRgb()`, `rgbToXyz()`, `xyzToLuv()`, `luvToLch()`, `lchToHsluv()` (or `lchToHpluv()`)
+
+For advanced usage, we also export the [bounding lines](https://www.hsluv.org/math/) in slope-intercept
+format, two for each RGB channel representing the limit of the gamut.
+
+- R < 0: `r0s`, `r0i`
+- R > 1: `r1s`, `r1i`
+- G < 0: `g0s`, `g0i`
+- G > 1: `g1s`, `g1i`
+- B < 0: `b0s`, `b0i`
+- B > 1: `b1s`, `b1i`
 
 ## Development
 

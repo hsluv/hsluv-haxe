@@ -19,7 +19,7 @@ package hsluv;
 
 	Source: https://en.wikipedia.org/wiki/Double-precision_floating-point_format
 
-	This class is designed to avoid heap allocation
+	This class is designed to avoid heap allocation.
  */
 class Hsluv {
 	// RGB
