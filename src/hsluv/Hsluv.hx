@@ -246,7 +246,7 @@ class Hsluv {
 		form that represent the bounds in CIELUV, stepping over which will
 		push a value out of the RGB gamut.
 	 */
-	public function calculateBoundingLines(l:Float, h:Float) {
+	public function calculateBoundingLines(l:Float) {
 		var sub1:Float = Math.pow(l + 16, 3) / 1560896;
 		var sub2:Float = sub1 > epsilon ? sub1 : l / kappa;
 
@@ -353,7 +353,7 @@ class Hsluv {
 			this.lch_c = 0;
 		} else {
 			this.lch_l = this.hsluv_l;
-			this.calculateBoundingLines(this.hsluv_l, this.hsluv_h);
+			this.calculateBoundingLines(this.hsluv_l);
 			var max = this.calcMaxChromaHsluv(this.hsluv_h);
 			this.lch_c = max / 100 * this.hsluv_s;
 		}
@@ -369,7 +369,7 @@ class Hsluv {
 			this.hsluv_s = 0;
 			this.hsluv_l = 0;
 		} else {
-			this.calculateBoundingLines(this.lch_l, this.lch_h);
+			this.calculateBoundingLines(this.lch_l);
 			var max = this.calcMaxChromaHsluv(this.lch_h);
 			this.hsluv_s = this.lch_c / max * 100;
 			this.hsluv_l = this.lch_l;
@@ -387,7 +387,7 @@ class Hsluv {
 			this.lch_c = 0;
 		} else {
 			this.lch_l = this.hpluv_l;
-			this.calculateBoundingLines(this.hpluv_l, this.hpluv_h);
+			this.calculateBoundingLines(this.hpluv_l);
 			var max = this.calcMaxChromaHpluv();
 			this.lch_c = max / 100 * this.hpluv_p;
 		}
@@ -403,7 +403,7 @@ class Hsluv {
 			this.hpluv_p = 0;
 			this.hpluv_l = 0;
 		} else {
-			this.calculateBoundingLines(this.lch_l, this.lch_h);
+			this.calculateBoundingLines(this.lch_l);
 			var max = this.calcMaxChromaHpluv();
 			this.hpluv_p = this.lch_c / max * 100;
 			this.hpluv_l = this.lch_l;
