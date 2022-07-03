@@ -1,0 +1,20 @@
+name: Publish to haxelib
+
+on:
+  - tag
+
+jobs:
+  publish:
+    name: Test
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v3
+      - uses: krdlab/setup-haxe@v1
+        with:
+          haxe-version: 4.2.5
+      - name: Build
+        run: make build
+      - name: Submit
+        env:
+          HAXELIB_PASSWORD: ${{ env.HSLUV_HAXELIB_PASSWORD }}
+        run: haxelib submit hsluv.zip
