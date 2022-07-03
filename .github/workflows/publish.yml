@@ -1,7 +1,9 @@
 name: Publish to haxelib
 
 on:
-  - tag
+  create:
+    tags:
+      - v*
 
 jobs:
   publish:
