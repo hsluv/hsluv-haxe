@@ -3,7 +3,7 @@ package test;
 import hsluv.Hsluv;
 
 class RunTests {
-	private static inline var EPSILON:Float = 0.00000001;
+	private static inline var EPSILON:Float = 0.00000000001;
 
 	static function assertStringEquals(expected:String, actual:String) {
 		if (expected != actual) {

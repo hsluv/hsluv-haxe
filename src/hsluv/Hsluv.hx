@@ -75,25 +75,25 @@ class Hsluv {
 
 	private static var refY:Float = 1.0;
 
-	private static var refU:Float = 0.19783000664283681;
-	private static var refV:Float = 0.468319994938791;
+	private static var refU:Float = 0.19783000664283;
+	private static var refV:Float = 0.46831999493879;
 
 	// CIE LUV constants
-	private static var kappa:Float = 903.2962962962963;
-	private static var epsilon:Float = 0.0088564516790356308;
+	private static var kappa:Float = 903.2962962;
+	private static var epsilon:Float = 0.0088564516;
 
 	// Transformation matrix
-	private static var m_r0:Float = 3.2409699419045214;
-	private static var m_r1:Float = -1.5373831775700935;
-	private static var m_r2:Float = -0.49861076029300328;
+	private static var m_r0:Float = 3.240969941904521;
+	private static var m_r1:Float = -1.537383177570093;
+	private static var m_r2:Float = -0.498610760293;
 
-	private static var m_g0:Float = -0.96924363628087983;
-	private static var m_g1:Float = 1.8759675015077207;
-	private static var m_g2:Float = 0.041555057407175613;
+	private static var m_g0:Float = -0.96924363628087;
+	private static var m_g1:Float = 1.87596750150772;
+	private static var m_g2:Float = 0.041555057407175;
 
-	private static var m_b0:Float = 0.055630079696993609;
-	private static var m_b1:Float = -0.20397695888897657;
-	private static var m_b2:Float = 1.0569715142428786;
+	private static var m_b0:Float = 0.055630079696993;
+	private static var m_b1:Float = -0.20397695888897;
+	private static var m_b2:Float = 1.056971514242878;
 
 	// Used for rgb conversions
 	private static function fromLinear(c:Float):Float {
@@ -172,9 +172,9 @@ class Hsluv {
 		var lr = toLinear(this.rgb_r);
 		var lg = toLinear(this.rgb_g);
 		var lb = toLinear(this.rgb_b);
-		this.xyz_x = 0.41239079926595948 * lr + 0.35758433938387796 * lg + 0.18048078840183429 * lb;
-		this.xyz_y = 0.21263900587151036 * lr + 0.71516867876775593 * lg + 0.072192315360733715 * lb;
-		this.xyz_z = 0.019330818715591851 * lr + 0.11919477979462599 * lg + 0.95053215224966058 * lb;
+		this.xyz_x = 0.41239079926595 * lr + 0.35758433938387 * lg + 0.18048078840183 * lb;
+		this.xyz_y = 0.21263900587151 * lr + 0.71516867876775 * lg + 0.072192315360733 * lb;
+		this.xyz_z = 0.019330818715591 * lr + 0.11919477979462 * lg + 0.95053215224966 * lb;
 	}
 
 	public function xyzToLuv() {
@@ -328,7 +328,7 @@ class Hsluv {
 	}
 
 	/*
-		For HSLuv, we draw a ray from origin with angle specified by the hue. 
+		For HSLuv, we draw a ray from origin with angle specified by the hue.
 		Multiple bounding lines may intercept this ray. The first one to intercept
 		it determines maximum chroma.
 	 */
