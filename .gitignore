@@ -1,4 +1,5 @@
 /bin
+/build
 hsluv.zip
 .vscode/*
 !.vscode/settings.json

@@ -1,0 +1,17 @@
+name: Transpile Haxe
+
+on:
+  - workflow_dispatch
+
+jobs:
+  transpile:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: krdlab/setup-haxe@v1
+        with:
+          haxe-version: 4.3.1
+      - name: Compile to JavaScript (ES5)
+        run: haxe -cp src --js build/javascript/hsluv-es5.js hsluv.Hsluv
+      - name: Compile to JavaScript (ES6)
+        run: haxe -cp src --js build/javascript/hsluv-es6.js -D js-es=6 hsluv.Hsluv
