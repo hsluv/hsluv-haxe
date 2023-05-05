@@ -59,6 +59,8 @@ format, two for each RGB channel representing the limit of the gamut.
 
 Recommended editor: VS Code with [vshaxe](https://github.com/vshaxe/vshaxe/wiki) extension.
 
+Note that we have [automated Haxe transpilation to multiple targets](https://github.com/hsluv/hsluv-haxe/actions/workflows/transpile.yml).
+
 ## Testing
 
 Prefered way: Haxe's builtin interpreter. Doesn't require any external libs to execute the tests:

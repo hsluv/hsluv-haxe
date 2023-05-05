@@ -11,7 +11,28 @@ jobs:
       - uses: krdlab/setup-haxe@v1
         with:
           haxe-version: 4.3.1
+      - name: Install dependencies from haxelib
+        run: |
+          haxelib install hashlink
+          haxelib install hxjava
+          haxelib install hxcs
       - name: Compile to JavaScript (ES5)
         run: haxe -cp src --js build/javascript/hsluv-es5.js hsluv.Hsluv
       - name: Compile to JavaScript (ES6)
         run: haxe -cp src --js build/javascript/hsluv-es6.js -D js-es=6 hsluv.Hsluv
+      - name: Compile to C (via HashLink target)
+        run: haxe -cp src --hl build/c/hsluv.c hsluv.Hsluv
+      - name: Compile to Python
+        run: haxe -cp src --python build/python/hsluv.py hsluv.Hsluv
+      - name: Compile to C#
+        run: haxe -cp src --cs build/csharp hsluv.Hsluv
+      - name: Compile to Lua
+        run: haxe -cp src --lua build/lua/hsluv.lua hsluv.Hsluv
+      - name: Compile to PHP
+        run: haxe -cp src --php build/php hsluv.Hsluv
+      - name: Compile to Java
+        run: haxe -cp src --java build/java hsluv.Hsluv
+      - uses: actions/upload-artifact@v3
+        with:
+          name: hsluv-transpiled-${{ github.sha }}
+          path: build
