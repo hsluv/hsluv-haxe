@@ -32,7 +32,7 @@ jobs:
         run: haxe -cp src --php build/php hsluv.Hsluv
       - name: Compile to Java
         run: haxe -cp src --java build/java hsluv.Hsluv
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: hsluv-transpiled-${{ github.sha }}
           path: build
