@@ -1,16 +1,20 @@
 name: Transpile Haxe
 
 on:
-  - workflow_dispatch
+  workflow_dispatch:
 
 jobs:
   transpile:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: krdlab/setup-haxe@v1
         with:
           haxe-version: 4.3.1
+      - name: Install mono for C# compilation
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y mono-complete
       - name: Install dependencies from haxelib
         run: |
           haxelib install hashlink
@@ -32,7 +36,7 @@ jobs:
         run: haxe -cp src --php build/php hsluv.Hsluv
       - name: Compile to Java
         run: haxe -cp src --java build/java hsluv.Hsluv
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: hsluv-transpiled-${{ github.sha }}
           path: build
