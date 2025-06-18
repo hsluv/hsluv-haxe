@@ -7,7 +7,7 @@ class RunTests {
 
 	static function assertStringEquals(expected:String, actual:String) {
 		if (expected != actual) {
-			throw new haxe.Exception("Not equals");
+			throw "Not equals";
 		}
 	}
 
@@ -22,7 +22,7 @@ class RunTests {
 		if (Math.abs(expected - actual) > EPSILON) {
 			trace(expected);
 			trace(actual);
-			throw new haxe.Exception("Not equals");
+			throw "Not equals";
 		}
 	}
 
@@ -52,7 +52,7 @@ class RunTests {
 		trace("Loading snapshot ...");
 		var file = haxe.Resource.getString("snapshot-rev4");
 		if (file == null) {
-			throw new haxe.Exception("Couldn't load the snapshot file snapshot-rev4, make sure it's present in test/resources.");
+			throw "Couldn't load the snapshot file snapshot-rev4, make sure it's present in test/resources.";
 		}
 		var object = haxe.Json.parse(file);
 
