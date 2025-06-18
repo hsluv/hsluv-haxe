@@ -1,5 +1,5 @@
 [![Run the test suite](https://github.com/hsluv/hsluv-haxe/actions/workflows/test.yml/badge.svg)](https://github.com/hsluv/hsluv-haxe/actions/workflows/test.yml)
-[![haxelib](https://img.shields.io/badge/haxelib-0.1.0-blue.svg)](https://lib.haxe.org/p/hsluv)
+[![haxelib](https://img.shields.io/badge/haxelib-0.1.1-blue.svg)](https://lib.haxe.org/p/hsluv)
 
 # HSLuv - Haxe implementation
 
