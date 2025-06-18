@@ -11,6 +11,10 @@ jobs:
       - uses: krdlab/setup-haxe@v1
         with:
           haxe-version: 4.3.1
+      - name: Install mono for C# compilation
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y mono-complete
       - name: Install dependencies from haxelib
         run: |
           haxelib install hashlink
