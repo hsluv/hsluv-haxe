@@ -11,7 +11,7 @@ jobs:
     strategy:
       matrix:
         # Version list: https://haxe.org/download/list/
-        haxe-version: [ '3', '4.1', '4.2', '4.3' ]
+        haxe-version: [ '3.4.7', '4.1.5', '4.2.5', '4.3.7' ]
     name: Test
     runs-on: ubuntu-latest
     steps:
