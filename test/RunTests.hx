@@ -48,6 +48,34 @@ class RunTests {
 		assertFloatClose(expected.hpluv_l, actual.hpluv_l);
 	}
 
+	/**
+	 * The committed snapshot is the reference every port tests against, so the generator that
+	 * produces it must keep matching it. Regenerating the snapshot with a broken generator would
+	 * silently change the expected values for every implementation.
+	 */
+	static function assertGeneratorMatchesSnapshot(object:Dynamic) {
+		var generated = Snapshot.generateSnapshot();
+
+		for (fieldName in Reflect.fields(object)) {
+			var expected = Reflect.field(object, fieldName);
+			var actual = generated.get(fieldName);
+			if (actual == null) {
+				throw "Generated snapshot is missing " + fieldName;
+			}
+
+			for (channelName in ["rgb", "xyz", "luv", "lch", "hsluv", "hpluv"]) {
+				var expectedChannel:Array<Float> = Reflect.field(expected, channelName);
+				var actualChannel = actual.get(channelName);
+				if (actualChannel == null) {
+					throw "Generated snapshot is missing " + channelName + " for " + fieldName;
+				}
+				for (i in 0...expectedChannel.length) {
+					assertFloatClose(expectedChannel[i], actualChannel[i]);
+				}
+			}
+		}
+	}
+
 	static function main() {
 		trace("Loading snapshot ...");
 		var file = haxe.Resource.getString("snapshot-rev4");
@@ -101,6 +129,9 @@ class RunTests {
             conv.hpluvToHex();
             assertClose(conv, sample);
 		}
+
+		trace("Testing snapshot generator ...");
+		assertGeneratorMatchesSnapshot(object);
 
 		trace("OK");
 	}
