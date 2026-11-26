@@ -25,7 +25,7 @@ class ReadmeTest {
 
 The API is designed in a way to avoid heap allocation. The `HSLuv` class defines the following public fields:
 
-- RGB: `hex:String`, `rgb_r:Float` [0;1], `rgb_g:Float` [0;1], `rgb_r:Float` [0;1]
+- RGB: `hex:String`, `rgb_r:Float` [0;1], `rgb_g:Float` [0;1], `rgb_b:Float` [0;1]
 - CIE XYZ: `xyz_x:Float`, `xyz_y:Float`, `xyz_z:Float`
 - CIE LUV: `luv_l:Float`, `luv_u:Float`, `luv_v:Float`
 - CIE LUV LCh: `lch_l:Float`, `lch_c:Float`, `lch_h:Float`
