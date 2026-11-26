@@ -41,7 +41,7 @@ class Snapshot {
 
             var sample:StringMap<Array<Float>> = new StringMap();
             sample.set("rgb", [conv.rgb_r, conv.rgb_g, conv.rgb_b]);
-            sample.set("xyz", [conv.xyz_z, conv.xyz_y, conv.xyz_z]);
+            sample.set("xyz", [conv.xyz_x, conv.xyz_y, conv.xyz_z]);
             sample.set("luv", [conv.luv_l, conv.luv_u, conv.luv_v]);
             sample.set("lch", [conv.lch_l, conv.lch_c, conv.lch_h]);
             sample.set("hsluv", [conv.hsluv_h, conv.hsluv_s, conv.hsluv_l]);
